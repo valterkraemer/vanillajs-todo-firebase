@@ -18,6 +18,7 @@
 		this.ENTER_KEY = 13;
 		this.ESCAPE_KEY = 27;
 
+		this.$todoApp = qs('.todoapp');
 		this.$todoList = qs('.todo-list');
 		this.$todoItemCounter = qs('.todo-count');
 		this.$clearCompleted = qs('.clear-completed');
@@ -25,6 +26,9 @@
 		this.$footer = qs('.footer');
 		this.$toggleAll = qs('.toggle-all');
 		this.$newTodo = qs('.new-todo');
+		this.$loginButton = qs('#login');
+		this.$logoutButton = qs('#logout');
+		this.$statusIndicator = qs('#status');
 	}
 
 	View.prototype._removeItem = function (id) {
@@ -127,6 +131,25 @@
 			},
 			editItemDone: function () {
 				self._editItemDone(parameter.id, parameter.title);
+			},
+			loginVisibility: function () {
+				self.$todoApp.classList[parameter.visible ? 'add' : 'remove']('unauthenticated')
+			},
+			setStatus: function () {
+				var text = 'Offline'
+
+				switch (parameter.status) {
+					case 1:
+						text = 'Up to date';
+						break;
+					case 2:
+						text = 'Loading...';
+						break;
+					case 3:
+						text = 'Storing...';
+				}
+
+				self.$statusIndicator.textContent = text;
 			}
 		};
 
@@ -210,6 +233,17 @@
 
 		} else if (event === 'itemEditCancel') {
 			self._bindItemEditCancel(handler);
+
+		} else if (event === 'login') {
+			$on(self.$loginButton, 'click', function () {
+				handler();
+			});
+
+		} else if (event === 'logout') {
+			$on(self.$logoutButton, 'click', function () {
+				handler();
+			});
+
 		}
 	};
 

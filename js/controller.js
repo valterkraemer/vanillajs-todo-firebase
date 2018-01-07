@@ -44,6 +44,28 @@
 		self.view.bind('toggleAll', function (status) {
 			self.toggleAll(status.completed);
 		});
+
+		self.view.bind('login', function () {
+			self.login();
+		});
+
+		self.view.bind('logout', function () {
+			self.logout();
+		});
+
+		self.model.storage.on('dataChange', function() {
+			self.setView(document.location.hash, true)
+		});
+
+		self.setStatus(self.model.storage.status);
+		self.model.storage.on('statusChange', function(status) {
+			self.setStatus(status);
+		});
+
+		self.setAuth(self.model.storage.authenticated);
+		self.model.storage.on('authChange', function(authenticated) {
+			self.setAuth(authenticated);
+		});
 	}
 
 	/**
@@ -51,10 +73,10 @@
 	 *
 	 * @param {string} '' | 'active' | 'completed'
 	 */
-	Controller.prototype.setView = function (locationHash) {
+	Controller.prototype.setView = function (locationHash, force) {
 		var route = locationHash.split('/')[1];
 		var page = route || '';
-		this._updateFilterState(page);
+		this._updateFilterState(page, force);
 	};
 
 	/**
@@ -209,6 +231,38 @@
 		self._filter();
 	};
 
+	Controller.prototype.login = function () {
+		var self = this;
+
+		self.model.login(function() {
+			self.view.render('loginVisibility', {
+				visible: false
+			});
+		})
+	};
+
+	Controller.prototype.logout = function () {
+		var self = this;
+
+		self.model.logout(function() {
+			self.view.render('loginVisibility', {
+				visible: true
+			});
+		});
+	};
+
+	Controller.prototype.setStatus = function (status) {
+		this.view.render('setStatus', {
+			status: status
+		});
+	}
+
+	Controller.prototype.setAuth = function (status) {
+		this.view.render('loginVisibility', {
+			visible: !status
+		});
+	}
+
 	/**
 	 * Updates the pieces of the page which change depending on the remaining
 	 * number of todos.
@@ -250,7 +304,7 @@
 	/**
 	 * Simply updates the filter nav's selected states
 	 */
-	Controller.prototype._updateFilterState = function (currentPage) {
+	Controller.prototype._updateFilterState = function (currentPage, force) {
 		// Store a reference to the active route, allowing us to re-filter todo
 		// items as they are marked complete or incomplete.
 		this._activeRoute = currentPage;
@@ -259,7 +313,7 @@
 			this._activeRoute = 'All';
 		}
 
-		this._filter();
+		this._filter(force);
 
 		this.view.render('setFilter', currentPage);
 	};

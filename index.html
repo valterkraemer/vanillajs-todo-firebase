@@ -5,16 +5,68 @@
 		<title>VanillaJS • TodoMVC</title>
 		<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
 		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+		<style>
+			.status-indicator {
+				margin-left: auto;
+			}
+
+			.tool-bar {
+				display: flex;
+				padding: 3px;
+			}
+
+			.tool-bar span:first-child {
+				margin-left: auto;
+			}
+
+			.tool-bar > * {
+				padding: 3px 5px;
+			}
+
+			.tool-bar button {
+				border: 1px solid #ededed;
+				border-radius: 2px;
+				cursor: pointer;
+			}
+
+			.tool-bar button:hover {
+				background-color: #f5f5f5;
+			}
+
+			.todoapp:not(.unauthenticated) #login {
+				display: none;
+			}
+
+			.todoapp.unauthenticated #logout {
+				display: none;
+			}
+
+			.todoapp.unauthenticated [auth-disabled] {
+				pointer-events: none;
+			}
+
+			.todoapp.unauthenticated [auth-disabled].destroy {
+				display: none;
+			}
+		</style>
 	</head>
 	<body>
 		<section class="todoapp">
+
+			<div class="tool-bar">
+				<span id="status"></span>
+
+				<button id="login">Login</button>
+				<button id="logout">Logout</button>
+			</div>
+
 			<header class="header">
 				<h1>todos</h1>
-				<input class="new-todo" placeholder="What needs to be done?" autofocus>
+				<input class="new-todo" placeholder="What needs to be done?" autofocus auth-disabled>
 			</header>
 			<section class="main">
-				<input class="toggle-all" type="checkbox">
-				<label for="toggle-all">Mark all as complete</label>
+				<input class="toggle-all" type="checkbox" auth-disabled>
+				<label for="toggle-all" auth-disabled>Mark all as complete</label>
 				<ul class="todo-list"></ul>
 			</section>
 			<footer class="footer">
@@ -30,7 +82,7 @@
 						<a href="#/completed">Completed</a>
 					</li>
 				</ul>
-				<button class="clear-completed">Clear completed</button>
+				<button class="clear-completed" auth-disabled>Clear completed</button>
 			</footer>
 		</section>
 		<footer class="info">
@@ -39,9 +91,14 @@
 			<p>Refactored by <a href="https://github.com/cburgmer">Christoph Burgmer</a></p>
 			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
 		</footer>
+		<!-- Firebase -->
+		<script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+
 		<script src="node_modules/todomvc-common/base.js"></script>
+
+		<script src="js/firebase-store.js"></script>
+
 		<script src="js/helpers.js"></script>
-		<script src="js/store.js"></script>
 		<script src="js/model.js"></script>
 		<script src="js/template.js"></script>
 		<script src="js/view.js"></script>

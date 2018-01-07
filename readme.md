@@ -1,5 +1,7 @@
-# Vanilla JavaScript TodoMVC Example
+# Vanilla JavaScript TodoMVC Firebase (+localStorage) Example
 
-> JavaScript® (often shortened to JS) is a lightweight, interpreted, object-oriented language with first-class functions, most known as the scripting language for Web pages, but used in many non-browser environments as well such as node.js or Apache CouchDB.
+Fork of [the VanillaJS MVC example](https://github.com/tastejs/todomvc/tree/master/examples/vanillajs), but using Firebase Realtime Database as data store.
 
-> _[JavaScript - developer.mozilla.org](http://developer.mozilla.org/en-US/docs/JavaScript)
+If there is no Internet connection it uses localStorage as data store, until connection is reestablished.
+
+[DEMO](https://valterkraemer.github.io/vanillajs-todo-firebase/)

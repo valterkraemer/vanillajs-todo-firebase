@@ -114,6 +114,14 @@
 		});
 	};
 
+	Model.prototype.login = function(callback) {
+		this.storage.login().then(callback);
+	};
+
+	Model.prototype.logout = function(callback) {
+		this.storage.logout().then(callback);
+	};
+
 	// Export to window
 	window.app = window.app || {};
 	window.app.Model = Model;
