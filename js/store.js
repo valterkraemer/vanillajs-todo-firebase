@@ -13,18 +13,11 @@
 	function Store(name, callback) {
 		callback = callback || function () {};
 
-		this._dbName = name;
-
-		if (!localStorage[name]) {
-			var data = {
-				todos: []
-			};
-
-			localStorage[name] = JSON.stringify(data);
-		}
-
-		callback.call(this, JSON.parse(localStorage[name]));
+		FirebaseStore.call(this, name);
 	}
+
+	Store.prototype = Object.create(FirebaseStore.prototype);
+	Store.prototype.constructor = Store;
 
 	/**
 	 * Finds items based on a query given as a JS object
@@ -40,20 +33,24 @@
 	 * });
 	 */
 	Store.prototype.find = function (query, callback) {
+		var self = this
+
 		if (!callback) {
 			return;
 		}
 
-		var todos = JSON.parse(localStorage[this._dbName]).todos;
+		self.getData().then(function(data) {
+			var todos = data.todos;
 
-		callback.call(this, todos.filter(function (todo) {
-			for (var q in query) {
-				if (query[q] !== todo[q]) {
-					return false;
+			callback.call(self, todos.filter(function (todo) {
+				for (var q in query) {
+					if (query[q] !== todo[q]) {
+						return false;
+					}
 				}
-			}
-			return true;
-		}));
+				return true;
+			}));
+		});
 	};
 
 	/**
@@ -62,8 +59,13 @@
 	 * @param {function} callback The callback to fire upon retrieving data
 	 */
 	Store.prototype.findAll = function (callback) {
+		var self = this;
+
 		callback = callback || function () {};
-		callback.call(this, JSON.parse(localStorage[this._dbName]).todos);
+
+		self.getData().then(function(data) {
+			callback.call(self, data.todos);
+		});
 	};
 
 	/**
@@ -75,10 +77,11 @@
 	 * @param {number} id An optional param to enter an ID of an item to update
 	 */
 	Store.prototype.save = function (updateData, callback, id) {
-		var data = JSON.parse(localStorage[this._dbName]);
-		var todos = data.todos;
+		var self = this;
 
 		callback = callback || function () {};
+
+		var todos = self.data.todos;
 
 		// If an ID was actually given, find the item and update each property
 		if (id) {
@@ -91,17 +94,17 @@
 				}
 			}
 
-			localStorage[this._dbName] = JSON.stringify(data);
-			callback.call(this, todos);
+			self.store(self.data);
+			callback.call(self, todos);
 		} else {
 			// Generate an ID
 			updateData.id = new Date().getTime();
 
 			todos.push(updateData);
-			localStorage[this._dbName] = JSON.stringify(data);
-			callback.call(this, [updateData]);
+			self.store(self.data);
+			callback.call(self, [updateData]);
 		}
-	};
+	}
 
 	/**
 	 * Will remove an item from the Store based on its ID
@@ -110,8 +113,11 @@
 	 * @param {function} callback The callback to fire after saving
 	 */
 	Store.prototype.remove = function (id, callback) {
-		var data = JSON.parse(localStorage[this._dbName]);
-		var todos = data.todos;
+		var self = this;
+
+		callback = callback || function () {};
+
+		var todos = self.data.todos;
 
 		for (var i = 0; i < todos.length; i++) {
 			if (todos[i].id == id) {
@@ -120,7 +126,7 @@
 			}
 		}
 
-		localStorage[this._dbName] = JSON.stringify(data);
+		self.store(self.data);
 		callback.call(this, todos);
 	};
 
@@ -130,10 +136,29 @@
 	 * @param {function} callback The callback to fire after dropping the data
 	 */
 	Store.prototype.drop = function (callback) {
-		var data = {todos: []};
-		localStorage[this._dbName] = JSON.stringify(data);
-		callback.call(this, data.todos);
+		this.data = {todos: []};
+		self.store(this.data);
+		callback.call(this, this.data.todos);
 	};
+
+	Store.prototype.getData = function() {
+		var self = this;
+
+		if (self.data) {
+			return Promise.resolve(self.data);
+		}
+
+		return self.load().then(function(data) {
+			if (!data || !data.todos) {
+				data = {
+					todos: []
+				}
+			}
+
+			self.data = data;
+			return data;
+		})
+	}
 
 	// Export to window
 	window.app = window.app || {};
